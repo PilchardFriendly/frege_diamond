@@ -58,18 +58,3 @@ main _ = forever interaction
 		
 		eof :: EOFException -> IO ()
 		eof _ = print "Goodbye."
-
--- p_test = property $ \(n::Integer) -> odd n ^^ even n
-
-
--- class TextInteraction m
--- 	prompt String -> m String
--- 	notice String -> m ()
-
--- instance TextInteraction IO where
--- 	prompt s = do
--- 		stdout.print s
--- 		stdout.flush
--- 		getLine
--- 	notice = println
-
