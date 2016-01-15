@@ -4,11 +4,18 @@ Example of pure Frege language project.
 
 ## Usage
 
+
 Run the Frege compiler and then run the Diamond main function:
+
+    ./go
+Or...
 
     lein fregec :run Diamond
 
 Run the Frege compiler and then run the tests:
+
+    ./go test
+Or...
 
     lein fregec :test -v DiamondTest
 
