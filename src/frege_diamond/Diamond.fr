@@ -1,0 +1,75 @@
+module Diamond where
+
+import Test.QuickCheck
+
+type Repr = Int->Char
+
+data Diamond = Diamond Int Repr
+
+instance Show Diamond where
+	show = unlines . diamondshow
+	    where
+	        diamondshow (Diamond width repr) = triangle ++ centreline ++ (reverse triangle)
+          	    where
+                    centreline = [diamondline repr 0 width]
+                    triangle = do
+                        val <- [ 0 .. (width-1) ]
+                        return (diamondline repr (width-val) val)
+
+diamondRepr :: Char -> Repr
+diamondRepr ch x = (x + ch.ord).char
+
+mkDiamond :: Char -> Either String Diamond
+mkDiamond ch = case (ctos ch) of
+ 		´[a-z]´ -> Right $ act 'a' ch
+ 		´[A-Z]´ -> Right $ act 'A' ch
+ 		x       -> fail  $ "`" ++ x ++ "` does not match [a-zA-Z]"
+ 	where act base ch = Diamond (ch.ord - base.ord) (diamondRepr base)
+
+--- create a single scan line for the diamond
+diamondline :: Repr -> Int -> Int -> String
+diamondline repr offset val= joined "" [prefix,ch,suffix]
+	where
+		prefix = packed $ whitespace offset
+		suffix
+		    | val == 0 = prefix
+		    | otherwise = middle ++ ch ++ prefix
+		        where middle = packed $ whitespace ((2*val)-1)
+		ch = ctos $ repr val
+		whitespace n =  replicate n ' '
+
+main _ = forever interaction
+			`catch` eof
+			`finally` println "Thanks for digging."
+	where 
+		interaction = do
+			reply <-  prompt "Enter a single character [a-zA-Z]: "
+			println $ case (unpacked reply) of
+				[ch] -> either id show $ mkDiamond ch
+				_    -> "Try a single character like 'a' or 'A' (without the quotes)"
+
+
+		prompt s = do
+			stdout.print s 
+			stdout.flush 
+			getLine
+
+
+		
+		eof :: EOFException -> IO ()
+		eof _ = print "Goodbye."
+
+-- p_test = property $ \(n::Integer) -> odd n ^^ even n
+
+
+-- class TextInteraction m
+-- 	prompt String -> m String
+-- 	notice String -> m ()
+
+-- instance TextInteraction IO where
+-- 	prompt s = do
+-- 		stdout.print s
+-- 		stdout.flush
+-- 		getLine
+-- 	notice = println
+

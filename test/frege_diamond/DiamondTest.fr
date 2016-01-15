@@ -1,0 +1,52 @@
+module DiamondTest where
+
+import Test.QuickCheck
+import Diamond
+
+lowerRepr = diamondRepr 'a'
+upperRepr = diamondRepr 'A'
+
+repr0 = property $ \(baseChar::Char) -> (diamondRepr baseChar 0) == baseChar
+repr1 = property $ \(baseChar::Char) -> (diamondRepr baseChar 1) == (baseChar.ord +1).char
+lowerRepr3 = once $ lowerRepr 3 == 'd'
+upperRepr25 = once $ upperRepr 25 == 'Z'
+
+data OffsetRange = OffsetRange {offsetRange :: Int}
+derive Show OffsetRange
+
+instance Arbitrary OffsetRange where
+    arbitrary     = OffsetRange `liftM` choose (0, 100)
+
+diamondLineOffset = property $ \(OffsetRange{offsetRange}) ->
+    (take offsetRange $ unpacked (diamondline upperRepr offsetRange 0)) == (replicate offsetRange ' ')
+
+diamondLineOffsetCharacter = property $ \(OffsetRange{offsetRange}) ->
+    (take 1 (drop offsetRange $ unpacked (diamondline upperRepr offsetRange 0))) == ['A']
+
+diamondLineReversed = property $ \(OffsetRange{offsetRange}) ->
+        let
+            line = unpacked (diamondline upperRepr offsetRange 0)
+        in
+            (reverse line) == line
+
+instance Arbitrary Diamond where
+    arbitrary = maker `liftM` choose (0,26)
+        where
+            maker width = Diamond width upperRepr
+
+diamondReverable = property $ \(d::Diamond) ->
+    let actual = lines $ show d
+    in actual == reverse actual
+
+upperDiamondA = once $ actual == expected
+    where
+        expected = "A":[]
+        actual = lines $ show $ Diamond 0 upperRepr
+
+upperDiamondC = once $ actual == expected
+    where
+        expected = "  A  ":" B B ":"C   C":" B B ":"  A  ":[]
+        actual = lines $ show $ Diamond 2 upperRepr
+
+
+
